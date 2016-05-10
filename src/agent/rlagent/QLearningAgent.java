@@ -7,13 +7,15 @@ import java.util.List;
 import environnement.Action;
 import environnement.Environnement;
 import environnement.Etat;
+import java.util.Map;
 /**
  * 
  * @author laetitiamatignon
  *
  */
 public class QLearningAgent extends RLAgent{
-	//TODO
+	
+        Map<Etat,Map<Action, Double>> qValeurs ;
 	
 	
 	/**
@@ -25,7 +27,7 @@ public class QLearningAgent extends RLAgent{
 	public QLearningAgent(double alpha, double gamma,
 			Environnement _env) {
 		super(alpha, gamma,_env);
-		//TODO
+		qValeurs = new HashMap() ;
 		
 	
 	}
@@ -40,8 +42,17 @@ public class QLearningAgent extends RLAgent{
 	 */
 	@Override
 	public List<Action> getPolitique(Etat e) {
-		//TODO
-		return null;
+		Double maxValue = getValeur(e) ;
+                List<Action> returnActions = new ArrayList<>();
+                if(getActionsLegales(e).size() == 0) {
+                    return returnActions ;
+                }
+                for(Action a : qValeurs.get(e).keySet()) {
+                    if(getQValeur(e, a) == maxValue) {
+                        returnActions.add(a);
+                    }
+                }
+		return returnActions;
 		
 		
 	}
@@ -51,8 +62,17 @@ public class QLearningAgent extends RLAgent{
 	 */
 	@Override
 	public double getValeur(Etat e) {
-		//TODO
-		return 0.0;
+		Map<Action, Double> truc = qValeurs.get(e);
+                if(truc == null) {
+                    return 0d ;
+                }
+                Double currentMax = 0d ;
+                for(Action a : truc.keySet()) {
+                    if(currentMax < truc.get(a)) {
+                        currentMax = truc.get(a);
+                    }
+                }
+		return currentMax;
 		
 	}
 
@@ -64,8 +84,8 @@ public class QLearningAgent extends RLAgent{
 	 */
 	@Override
 	public double getQValeur(Etat e, Action a) {
-		//TODO
-		return 0.0;
+            Map<Action, Double> truc = qValeurs.get(e);
+            return (truc == null || truc.get(a) == null) ? 0d : truc.get(a) ;
 	}
 	
 	/**
@@ -73,12 +93,29 @@ public class QLearningAgent extends RLAgent{
 	 */
 	@Override
 	public void setQValeur(Etat e, Action a, double d) {
-		//TODO
+		
+            if(qValeurs.get(e) == null) {
+                qValeurs.put(e, new HashMap<Action, Double>());
+            }
+            
+            qValeurs.get(e).put(a, d);
 		
 		
 		//mise a jour vmin et vmax pour affichage gradient de couleur
-		//...
 		
+            double my_min = Double.MAX_VALUE ;
+            double my_max = Double.MIN_VALUE ;
+            
+            for(Etat etat : qValeurs.keySet()) {
+                for(Action action : qValeurs.get(etat).keySet()) {
+                    if(qValeurs.get(etat).get(action) < my_min) {
+                        my_min = qValeurs.get(etat).get(action);
+                    }
+                }
+                if(getValeur(etat) > my_max) {
+                    my_max = getValeur(etat);
+                }
+            }
 		
 		
 		this.notifyObs();
@@ -96,8 +133,9 @@ public class QLearningAgent extends RLAgent{
 	 */
 	@Override
 	public void endStep(Etat e, Action a, Etat esuivant, double reward) {
-		//TODO
-		
+		Double oldValue = qValeurs.get(e).get(a) ;
+		oldValue = (1-alpha)*oldValue + alpha*(reward+(gamma*getValeur(esuivant)));
+                qValeurs.get(e).put(a, oldValue);
 	}
 
 	@Override
@@ -113,7 +151,7 @@ public class QLearningAgent extends RLAgent{
 	public void reset() {
 		super.reset();
 		this.episodeNb =0;
-		//TODO
+		qValeurs = new HashMap<>();
 		
 		
 		this.notifyObs();
