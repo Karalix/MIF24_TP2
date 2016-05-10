@@ -43,6 +43,11 @@ public class QLearningAgent extends RLAgent {
         if (getActionsLegales(e).size() == 0 || qValeurs.get(e) == null) {
             return returnActions;
         }
+        if(qValeurs.get(e).keySet().isEmpty()) {
+            for(Action a : getActionsLegales(e)) {
+                setQValeur(e, a, 0d);
+            }
+        }
         for (Action a : qValeurs.get(e).keySet()) {
             if (getQValeur(e, a) == maxValue) {
                 returnActions.add(a);

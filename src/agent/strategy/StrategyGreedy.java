@@ -13,8 +13,8 @@ import environnement.Etat;
  *
  */
 public class StrategyGreedy extends StrategyExploration{
-	//TODO
-	//...
+	
+    double epsilon ;
 	
 	private Random rand=new Random();
 	
@@ -22,8 +22,8 @@ public class StrategyGreedy extends StrategyExploration{
 	
 	public StrategyGreedy(RLAgent agent,double epsilon) {
 		super(agent);
-		//TODO
-		//...
+		
+                this.epsilon = epsilon ;
 	}
 
 	/**
@@ -33,17 +33,32 @@ public class StrategyGreedy extends StrategyExploration{
 	public Action getAction(Etat _e) {
 		//VOTRE CODE
 		//getAction renvoi null si _e absorbant
-		
-		
-		return null;
+            List<Action> actions = this.agent.getActionsLegales(_e);
+            if(actions.size() == 0) {
+                return null ;
+            }
+            else {
+                double r = rand.nextFloat()%10.0d ;
+                System.out.println("R value : "+r);
+                if(epsilon >= r || agent.getPolitique(_e).isEmpty()) {
+                    System.out.println("Random action");
+                    int chosenAction = rand.nextInt(actions.size()) ;
+                    System.out.println("Chosen action : "+chosenAction);
+                    return actions.get(chosenAction);
+                } else {
+                    System.out.println("Follow politics");
+                    int choosenAction = rand.nextInt(agent.getPolitique(_e).size()) ;
+                    System.out.println("Chosen action : "+choosenAction);
+                    return agent.getPolitique(_e).get(choosenAction) ;
+                }
+            }
 		
 	}
 
 
 
 	public void setEpsilon(double epsilon) {
-		//VOTRE CODE
-		
+            this.epsilon = epsilon ;
 	}
 
 
